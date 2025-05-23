@@ -32,8 +32,8 @@ LOG_LEVEL = os.environ.get("LOG_LEVEL", "INFO").upper()
 # 创建日志格式
 log_formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 
-# 创建日志文件处理程序
-file_handler = logging.FileHandler(LOG_FILE)
+# 创建日志文件处理程序，指定UTF-8编码
+file_handler = logging.FileHandler(LOG_FILE, encoding='utf-8')
 file_handler.setFormatter(log_formatter)
 
 # 配置根日志记录器

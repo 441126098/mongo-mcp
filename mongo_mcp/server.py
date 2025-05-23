@@ -17,6 +17,7 @@ from mongo_mcp.tools import (
     update_document,
     delete_document,
 )
+from mongo_mcp.utils.json_encoder import mongodb_json_serializer
 
 
 # Set up MCP server
@@ -33,6 +34,7 @@ for tool in [
     update_document,
     delete_document,
 ]:
+    # 添加工具，不使用serializer参数
     app.add_tool(tool)
 
 

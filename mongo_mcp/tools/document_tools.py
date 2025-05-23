@@ -6,6 +6,7 @@ from bson.objectid import ObjectId
 
 from mongo_mcp.db import get_collection
 from mongo_mcp.config import logger
+from mongo_mcp.utils.json_encoder import clean_document_for_json
 
 
 def insert_document(
@@ -276,8 +277,11 @@ def _process_query_results(cursor) -> List[Dict[str, Any]]:
     """
     result = []
     for doc in cursor:
-        # Convert ObjectId to string for _id
-        if "_id" in doc and isinstance(doc["_id"], ObjectId):
-            doc["_id"] = str(doc["_id"])
-        result.append(doc)
+        try:
+            # 使用自定义函数处理文档，确保所有字段都可JSON序列化
+            cleaned_doc = clean_document_for_json(doc)
+            logger.info(f"Doc: {doc}")
+            result.append(cleaned_doc)
+        except Exception as e:
+            logger.warning(f"Skipping document due to encoding issues: {str(e)}")
     return result 
