@@ -46,6 +46,21 @@ MONGODB_URI="mongodb://localhost:27017" python -m mongo_mcp.server
 - `LOG_LEVEL`: 日志级别（默认值: "INFO"）
   - 可选值: DEBUG, INFO, WARNING, ERROR, CRITICAL
 
+### Cursor 配置样例
+
+如果你使用 [Cursor](https://www.cursor.so/) 作为开发环境，可以在 `.cursor/mcp.json` 文件中添加如下配置以便本地调试：
+
+```json
+"mongodb": {
+  "command": "python -m mongo_mcp.server",
+  "env": {
+    "MONGODB_URI": "mongodb://localhost:27017",
+    "MONGODB_DEFAULT_DB": "DEFAULT_DB_NAME",
+    "LOG_LEVEL": "INFO"
+  }
+}
+```
+
 ### 支持的操作
 
 - 列出所有数据库

@@ -45,6 +45,21 @@ The server uses the stdio transport method, making it suitable for integration w
 - `LOG_LEVEL`: Logging level (default: "INFO")
   - Available values: DEBUG, INFO, WARNING, ERROR, CRITICAL
 
+### Cursor Example Configuration
+
+If you use [Cursor](https://www.cursor.so/) as your development environment, you can add the following configuration to your `.cursor/mcp.json` file for local debugging:
+
+```json
+"mongodb": {
+  "command": "python -m mongo_mcp.server",
+  "env": {
+    "MONGODB_URI": "mongodb://localhost:27017",
+    "MONGODB_DEFAULT_DB": "DEFAULT_DB_NAME",
+    "LOG_LEVEL": "INFO"
+  }
+}
+```
+
 ### Supported Operations
 
 - List all databases
