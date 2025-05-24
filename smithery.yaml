@@ -1,0 +1,29 @@
+# Smithery configuration file: https://smithery.ai/docs/build/project-config
+
+startCommand:
+  type: stdio
+  commandFunction:
+    # A JS function that produces the CLI command based on the given config to start the MCP on stdio.
+    |-
+    (config) => ({command: 'mongo-mcp', args: [], env: { MONGODB_URI: config.mongodbUri, MONGODB_DEFAULT_DB: config.mongodbDefaultDb, LOG_LEVEL: config.logLevel } })
+  configSchema:
+    # JSON Schema defining the configuration options for the MCP.
+    type: object
+    required: []
+    properties:
+      mongodbUri:
+        type: string
+        default: mongodb://localhost:27017
+        description: MongoDB connection URI
+      mongodbDefaultDb:
+        type: string
+        default: ""
+        description: Default MongoDB database name
+      logLevel:
+        type: string
+        default: INFO
+        description: Logging level
+  exampleConfig:
+    mongodbUri: mongodb://localhost:27017
+    mongodbDefaultDb: testdb
+    logLevel: INFO
