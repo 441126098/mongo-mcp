@@ -1,5 +1,6 @@
 # Mongo-MCP
 
+[![smithery badge](https://smithery.ai/badge/@441126098/mongo-mcp)](https://smithery.ai/server/@441126098/mongo-mcp)
 English | [简体中文](README_CN.md)
 
 A Machine Chat Protocol (MCP) service for MongoDB operations. This service provides a set of tools that allow Large Language Models (LLMs) to interact with MongoDB databases through basic CRUD operations and administrative tasks.
