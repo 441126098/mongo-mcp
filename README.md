@@ -1,54 +1,34 @@
 # Mongo-MCP
 
-[English](README_EN.md) | 简体中文
+English | [简体中文](README_CN.md)
 
-一个用于 MongoDB 操作的机器聊天协议（Machine Chat Protocol, MCP）服务。该服务提供了一套工具，使大型语言模型（LLMs）能够通过基本的 CRUD 操作和管理任务与 MongoDB 数据库进行交互。
+A Machine Chat Protocol (MCP) service for MongoDB operations. This service provides a set of tools that allow Large Language Models (LLMs) to interact with MongoDB databases through basic CRUD operations and administrative tasks.
 
-## 功能特性
+## Features
 
-- MongoDB 实例连接管理
-- 数据库和集合的列表查询
-- 文档的增删改查（CRUD）操作
-  - 插入文档
-  - 查询文档（支持复杂查询和投影）
-  - 更新文档
-  - 删除文档
-- 完整支持 MongoDB 查询语法和投影操作
-- 完善的错误处理和日志记录
-- 基于标准输入/输出（stdio）的 MCP 传输实现
+- MongoDB instance connection management
+- List databases and collections
+- Document CRUD operations
+  - Insert documents
+  - Query documents (supports complex queries and projections)
+  - Update documents
+  - Delete documents
+- Full support for MongoDB query syntax and projections
+- Comprehensive error handling and logging
+- Stdin/stdout (stdio) based MCP transport implementation
 
-## 安装方法
+## Usage
 
-```bash
-git clone https://github.com/yourusername/mongo-mcp.git
-cd mongo-mcp
-pip install -e .
-```
-
-## 使用说明
-
-### 启动 MCP 服务器
+### Run directly with uvx
 
 ```bash
-# 直接启动服务
-python -m mongo_mcp.server
-
-# 或者使用环境变量配置
-MONGODB_URI="mongodb://localhost:27017" python -m mongo_mcp.server
+uvx run mongo-mcp
 ```
+The server uses the stdio transport method, making it suitable for integration with MCP clients that support this transport method.
 
-服务器使用标准输入/输出（stdio）传输方式，适合与支持此传输方式的 MCP 客户端集成。
+### Cursor Example Configuration
 
-### 环境变量配置
-
-- `MONGODB_URI`: MongoDB 连接字符串（默认值: "mongodb://localhost:27017"）
-- `MONGODB_DEFAULT_DB`: 默认数据库名称（可选）
-- `LOG_LEVEL`: 日志级别（默认值: "INFO"）
-  - 可选值: DEBUG, INFO, WARNING, ERROR, CRITICAL
-
-### Cursor 配置样例
-
-如果你使用 [Cursor](https://www.cursor.so/) 作为开发环境，可以在 `.cursor/mcp.json` 文件中添加如下配置以便本地调试：
+If you use [Cursor](https://www.cursor.so/) as your development environment, you can add the following configuration to your `.cursor/mcp.json` file for local debugging:
 
 ```json
 "mongodb": {
@@ -61,56 +41,63 @@ MONGODB_URI="mongodb://localhost:27017" python -m mongo_mcp.server
 }
 ```
 
-### 支持的操作
+### Environment Variables
 
-- 列出所有数据库
-- 列出指定数据库中的所有集合
-- 插入文档
-- 查询文档（支持查询条件和字段投影）
-- 更新文档（支持单个和批量更新）
-- 删除文档（支持单个和批量删除）
+- `MONGODB_URI`: MongoDB connection string (default: "mongodb://localhost:27017")
+- `MONGODB_DEFAULT_DB`: Default database name (optional)
+- `LOG_LEVEL`: Logging level (default: "INFO")
+  - Available values: DEBUG, INFO, WARNING, ERROR, CRITICAL
 
-## 开发指南
+### Supported Operations
 
-1. 克隆仓库
+- List all databases
+- List all collections in a specified database
+- Insert documents
+- Query documents (supports query conditions and field projections)
+- Update documents (supports single and bulk updates)
+- Delete documents (supports single and bulk deletions)
+
+## Development Guide
+
+1. Clone the repository
 ```bash
 git clone https://github.com/yourusername/mongo-mcp.git
 cd mongo-mcp
 ```
 
-2. 安装开发依赖
+2. Install development dependencies
 ```bash
-# 使用 pip
-pip install -e ".[dev]"
+# Using pip
+pip install -e "[dev]"
 
-# 或使用 uv（推荐，安装更快）
-uv pip install -e ".[dev]"
+# Or using uv (recommended for faster installation)
+uv pip install -e "[dev]"
 ```
 
-3. 运行测试
+3. Run tests
 ```bash
 pytest
 ```
 
-4. 代码结构
-- `server.py`: MCP 服务器实现
-- `db.py`: MongoDB 操作核心实现
-- `config.py`: 配置管理
-- `tools/`: MCP 工具集实现
-- `tests/`: 测试用例
+4. Code Structure
+- `server.py`: MCP server implementation
+- `db.py`: Core MongoDB operations implementation
+- `config.py`: Configuration management
+- `tools/`: MCP tools implementation
+- `tests/`: Test cases
 
-## 日志
+## Logging
 
-日志文件默认保存在 `logs` 目录下，可通过环境变量 `LOG_LEVEL` 控制日志级别。
+Log files are stored in the `logs` directory by default. The log level can be controlled through the `LOG_LEVEL` environment variable.
 
-## 许可证
+## License
 
 MIT
 
-## 贡献指南
+## Contributing
 
-欢迎提交 Issue 和 Pull Request 来帮助改进项目。在提交 PR 之前，请确保：
+Contributions via Issues and Pull Requests are welcome. Before submitting a PR, please ensure:
 
-1. 代码通过所有测试
-2. 添加了适当的测试用例
-3. 更新了相关文档 
+1. All tests pass
+2. Appropriate test cases are added
+3. Documentation is updated 
