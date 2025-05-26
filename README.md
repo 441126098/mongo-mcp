@@ -4,6 +4,12 @@ English | [简体中文](README_CN.md)
 
 A Machine Chat Protocol (MCP) service for MongoDB operations. This service provides a set of tools that allow Large Language Models (LLMs) to interact with MongoDB databases through basic CRUD operations and administrative tasks.
 
+## Requirements
+
+- Python 3.10 or above
+- A running MongoDB database service
+- It is recommended to use [uv](https://github.com/astral-sh/uv) to run the program
+
 ## Features
 
 - MongoDB instance connection management
@@ -31,13 +37,20 @@ The server uses the stdio transport method, making it suitable for integration w
 If you use [Cursor](https://www.cursor.so/) as your development environment, you can add the following configuration to your `.cursor/mcp.json` file for local debugging:
 
 ```json
-"mongodb": {
-  "command": "python -m mongo_mcp.server",
-  "env": {
-    "MONGODB_URI": "mongodb://localhost:27017",
-    "MONGODB_DEFAULT_DB": "DEFAULT_DB_NAME",
-    "LOG_LEVEL": "INFO"
-  }
+{
+    "mcpServers": {
+        "mongo-mcp": {
+            "command": "uvx",
+            "args": [
+                "mongo-mcp"
+            ],
+            "env": {
+                "MONGODB_URI": "mongodb://localhost:27017",
+                "MONGODB_DEFAULT_DB": "MONGODB_DEFAULT_DB",
+                "LOG_LEVEL": "INFO"
+            }
+        }
+    }
 }
 ```
 
