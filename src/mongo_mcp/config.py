@@ -8,15 +8,6 @@ from pathlib import Path
 # 获取项目根目录
 PROJECT_ROOT = Path(__file__).parent.parent
 
-# 尝试导入dotenv并加载.env文件
-try:
-    from dotenv import load_dotenv
-    # 从项目根目录加载.env文件
-    env_path = PROJECT_ROOT / '.env'
-    load_dotenv(dotenv_path=env_path)
-except ImportError:
-    pass  # dotenv不可用时静默失败
-
 # MongoDB configuration
 MONGODB_URI = os.environ.get("MONGODB_URI", "mongodb://localhost:27017")
 MONGODB_DEFAULT_DB = os.environ.get("MONGODB_DEFAULT_DB")

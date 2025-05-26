@@ -4,6 +4,12 @@
 
 一个用于 MongoDB 操作的机器聊天协议（Machine Chat Protocol, MCP）服务。该服务提供了一套工具，使大型语言模型（LLMs）能够通过基本的 CRUD 操作和管理任务与 MongoDB 数据库进行交互。
 
+## 运行条件
+
+- Python 3.10 及以上版本
+- 已安装并运行中的 MongoDB 数据库服务
+- 推荐使用 [uv](https://github.com/astral-sh/uv) 运行程序
+
 ## 功能特性
 
 - MongoDB 实例连接管理
@@ -30,13 +36,20 @@ uvx run mongo-mcp
 如果你使用 [Cursor](https://www.cursor.so/) 作为开发环境，可以在 `.cursor/mcp.json` 文件中添加如下配置以便本地调试：
 
 ```json
-"mongodb": {
-  "command": "python -m mongo_mcp.server",
-  "env": {
-    "MONGODB_URI": "mongodb://localhost:27017",
-    "MONGODB_DEFAULT_DB": "DEFAULT_DB_NAME",
-    "LOG_LEVEL": "INFO"
-  }
+{
+    "mcpServers": {
+        "mongo-mcp": {
+            "command": "uvx",
+            "args": [
+                "mongo-mcp"
+            ],
+            "env": {
+                "MONGODB_URI": "mongodb://localhost:27017",
+                "MONGODB_DEFAULT_DB": "MONGODB_DEFAULT_DB",
+                "LOG_LEVEL": "INFO"
+            }
+        }
+    }
 }
 ```
 ### 环境变量配置说明
