@@ -28,7 +28,7 @@
 ### 使用 uvx 安装并直接运行
 
 ```bash
-uvx run mongo-mcp
+uvx mongo-mcp
 ```
 服务器使用标准输入/输出（stdio）传输方式，适合与支持此传输方式的 MCP 客户端集成。
 ### Cursor 配置样例
