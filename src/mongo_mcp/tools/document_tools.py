@@ -51,12 +51,61 @@ def insert_document(
         raise
 
 
+def insert_many_documents(
+    database_name: str,
+    collection_name: str,
+    documents: List[Dict[str, Any]],
+    ordered: bool = True
+) -> Dict[str, Any]:
+    """Insert multiple documents into the specified collection.
+    
+    Args:
+        database_name: Name of the database
+        collection_name: Name of the collection
+        documents: List of documents to insert
+        ordered: Whether to perform ordered or unordered inserts
+    
+    Returns:
+        Dict[str, Any]: Result containing the inserted document IDs
+    
+    Raises:
+        PyMongoError: If the operation fails
+        ValueError: If required parameters are missing
+    """
+    if not database_name or not collection_name:
+        msg = "Database name and collection name must be provided"
+        logger.error(msg)
+        raise ValueError(msg)
+    
+    if not documents or not isinstance(documents, list):
+        msg = "Documents must be a non-empty list"
+        logger.error(msg)
+        raise ValueError(msg)
+    
+    try:
+        collection = get_collection(database_name, collection_name)
+        result = collection.insert_many(documents, ordered=ordered)
+        
+        inserted_ids = [str(oid) for oid in result.inserted_ids]
+        logger.info(f"Inserted {len(inserted_ids)} documents into {database_name}.{collection_name}")
+        
+        return {
+            "inserted_ids": inserted_ids,
+            "inserted_count": len(inserted_ids),
+            "success": True
+        }
+    except PyMongoError as e:
+        logger.error(f"Failed to insert documents into {database_name}.{collection_name}: {e}")
+        raise
+
+
 def find_documents(
     database_name: str,
     collection_name: str,
     query: Dict[str, Any],
     projection: Optional[Dict[str, Any]] = None,
-    limit: int = 0
+    limit: int = 0,
+    sort: Optional[Dict[str, Any]] = None
 ) -> List[Dict[str, Any]]:
     """Find documents in the specified collection matching the query.
     
@@ -66,6 +115,7 @@ def find_documents(
         query: MongoDB query filter
         projection: MongoDB projection (fields to include/exclude)
         limit: Maximum number of documents to return (0 for no limit)
+        sort: MongoDB sort specification
     
     Returns:
         List[Dict[str, Any]]: List of matching documents
@@ -93,6 +143,10 @@ def find_documents(
         # Execute query
         cursor = collection.find(query, projection=projection)
         
+        # Apply sort if provided
+        if sort:
+            cursor = cursor.sort(list(sort.items()))
+        
         # Apply limit if provided
         if limit > 0:
             cursor = cursor.limit(limit)
@@ -106,6 +160,102 @@ def find_documents(
         return documents
     except PyMongoError as e:
         logger.error(f"Failed to find documents in {database_name}.{collection_name}: {e}")
+        raise
+
+
+def find_one_document(
+    database_name: str,
+    collection_name: str,
+    query: Dict[str, Any],
+    projection: Optional[Dict[str, Any]] = None
+) -> Optional[Dict[str, Any]]:
+    """Find a single document in the specified collection.
+    
+    Args:
+        database_name: Name of the database
+        collection_name: Name of the collection
+        query: MongoDB query filter
+        projection: MongoDB projection (fields to include/exclude)
+    
+    Returns:
+        Optional[Dict[str, Any]]: The found document or None
+    
+    Raises:
+        PyMongoError: If the operation fails
+        ValueError: If required parameters are missing
+    """
+    if not database_name or not collection_name:
+        msg = "Database name and collection name must be provided"
+        logger.error(msg)
+        raise ValueError(msg)
+    
+    if not isinstance(query, dict):
+        msg = "Query must be a dictionary"
+        logger.error(msg)
+        raise ValueError(msg)
+    
+    try:
+        collection = get_collection(database_name, collection_name)
+        
+        # Convert ObjectId strings in the query if present
+        query = _convert_id_strings(query)
+        
+        # Execute query
+        document = collection.find_one(query, projection=projection)
+        
+        if document:
+            document = clean_document_for_json(document)
+            logger.info(f"Found document in {database_name}.{collection_name}")
+        else:
+            logger.info(f"No document found in {database_name}.{collection_name}")
+        
+        return document
+    except PyMongoError as e:
+        logger.error(f"Failed to find document in {database_name}.{collection_name}: {e}")
+        raise
+
+
+def count_documents(
+    database_name: str,
+    collection_name: str,
+    query: Dict[str, Any]
+) -> int:
+    """Count documents matching the query in the specified collection.
+    
+    Args:
+        database_name: Name of the database
+        collection_name: Name of the collection
+        query: MongoDB query filter
+    
+    Returns:
+        int: Number of matching documents
+    
+    Raises:
+        PyMongoError: If the operation fails
+        ValueError: If required parameters are missing
+    """
+    if not database_name or not collection_name:
+        msg = "Database name and collection name must be provided"
+        logger.error(msg)
+        raise ValueError(msg)
+    
+    if not isinstance(query, dict):
+        msg = "Query must be a dictionary"
+        logger.error(msg)
+        raise ValueError(msg)
+    
+    try:
+        collection = get_collection(database_name, collection_name)
+        
+        # Convert ObjectId strings in the query if present
+        query = _convert_id_strings(query)
+        
+        count = collection.count_documents(query)
+        logger.info(f"Counted {count} documents in {database_name}.{collection_name}")
+        
+        return count
+    except PyMongoError as e:
+        logger.error(f"Failed to count documents in {database_name}.{collection_name}: {e}")
         raise
 
 
@@ -181,6 +331,65 @@ def update_document(
         raise
 
 
+def replace_document(
+    database_name: str,
+    collection_name: str,
+    query: Dict[str, Any],
+    replacement: Dict[str, Any],
+    upsert: bool = False
+) -> Dict[str, Any]:
+    """Replace a single document in the specified collection.
+    
+    Args:
+        database_name: Name of the database
+        collection_name: Name of the collection
+        query: MongoDB query filter
+        replacement: Replacement document (should not contain update operators)
+        upsert: Whether to insert if no document matches the query
+    
+    Returns:
+        Dict[str, Any]: Result of the replace operation
+    
+    Raises:
+        PyMongoError: If the operation fails
+        ValueError: If required parameters are missing or invalid
+    """
+    if not database_name or not collection_name:
+        msg = "Database name and collection name must be provided"
+        logger.error(msg)
+        raise ValueError(msg)
+    
+    if not isinstance(query, dict) or not isinstance(replacement, dict):
+        msg = "Query and replacement must be dictionaries"
+        logger.error(msg)
+        raise ValueError(msg)
+    
+    # Check if replacement contains update operators (which it shouldn't)
+    if any(key.startswith("$") for key in replacement):
+        msg = "Replacement document should not contain update operators"
+        logger.error(msg)
+        raise ValueError(msg)
+    
+    try:
+        collection = get_collection(database_name, collection_name)
+        
+        # Convert ObjectId strings in the query if present
+        query = _convert_id_strings(query)
+        
+        # Execute replace
+        result = collection.replace_one(query, replacement, upsert=upsert)
+        
+        logger.info(f"Replaced document in {database_name}.{collection_name}")
+        return {
+            "matched_count": result.matched_count,
+            "modified_count": result.modified_count,
+            "upserted_id": str(result.upserted_id) if result.upserted_id else None
+        }
+    except PyMongoError as e:
+        logger.error(f"Failed to replace document in {database_name}.{collection_name}: {e}")
+        raise
+
+
 def delete_document(
     database_name: str,
     collection_name: str,
@@ -221,67 +430,65 @@ def delete_document(
         # Execute delete
         if delete_many:
             result = collection.delete_many(query)
-            deleted = result.deleted_count
-            logger.info(f"Deleted {deleted} documents from {database_name}.{collection_name}")
-            
-            return {"deleted_count": deleted}
+            logger.info(f"Deleted {result.deleted_count} documents from {database_name}.{collection_name}")
         else:
             result = collection.delete_one(query)
             logger.info(f"Deleted {result.deleted_count} document from {database_name}.{collection_name}")
-            
-            return {"deleted_count": result.deleted_count}
+        
+        return {"deleted_count": result.deleted_count}
     except PyMongoError as e:
         logger.error(f"Failed to delete document(s) from {database_name}.{collection_name}: {e}")
         raise
 
 
 def _convert_id_strings(query: Dict[str, Any]) -> Dict[str, Any]:
-    """Convert string '_id' values to ObjectId instances.
+    """Convert string representations of ObjectId to actual ObjectId objects.
+    
+    This function recursively processes a query dictionary and converts
+    any string values that look like MongoDB ObjectIds into actual ObjectId objects.
     
     Args:
-        query: Query dictionary
+        query: The query dictionary to process
         
     Returns:
-        Dict[str, Any]: Query with converted ObjectId values
+        Dict[str, Any]: The processed query with ObjectIds converted
     """
-    if "_id" in query and isinstance(query["_id"], str):
-        try:
-            query["_id"] = ObjectId(query["_id"])
-        except Exception:
-            # If not a valid ObjectId, leave as is
-            pass
+    if not isinstance(query, dict):
+        return query
+        
+    converted = {}
+    for key, value in query.items():
+        if isinstance(value, str) and ObjectId.is_valid(value):
+            # Convert string ObjectId to ObjectId object
+            converted[key] = ObjectId(value)
+        elif isinstance(value, dict):
+            # Recursively process nested dictionaries
+            converted[key] = _convert_id_strings(value)
+        elif isinstance(value, list):
+            # Process lists that might contain ObjectId strings
+            converted[key] = [
+                ObjectId(item) if isinstance(item, str) and ObjectId.is_valid(item) else item
+                for item in value
+            ]
+        else:
+            converted[key] = value
     
-    # Handle $in operator
-    if "_id" in query and isinstance(query["_id"], dict) and "$in" in query["_id"]:
-        if isinstance(query["_id"]["$in"], list):
-            try:
-                query["_id"]["$in"] = [
-                    ObjectId(id_str) if isinstance(id_str, str) else id_str
-                    for id_str in query["_id"]["$in"]
-                ]
-            except Exception:
-                # If not a valid ObjectId, leave as is
-                pass
-                
-    return query
+    return converted
 
 
 def _process_query_results(cursor) -> List[Dict[str, Any]]:
-    """Process query results to handle ObjectId and other BSON types.
+    """Process query results and convert ObjectIds to strings for JSON serialization.
     
     Args:
-        cursor: MongoDB cursor from find operation
+        cursor: MongoDB cursor object
         
     Returns:
-        List[Dict[str, Any]]: Processed documents
+        List[Dict[str, Any]]: List of processed documents
     """
-    result = []
+    documents = []
     for doc in cursor:
-        try:
-            # 使用自定义函数处理文档，确保所有字段都可JSON序列化
-            cleaned_doc = clean_document_for_json(doc)
-            logger.info(f"Doc: {doc}")
-            result.append(cleaned_doc)
-        except Exception as e:
-            logger.warning(f"Skipping document due to encoding issues: {str(e)}")
-    return result 
+        # Use the clean_document_for_json utility
+        cleaned_doc = clean_document_for_json(doc)
+        documents.append(cleaned_doc)
+    
+    return documents 
